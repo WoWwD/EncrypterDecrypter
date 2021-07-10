@@ -1,4 +1,4 @@
-﻿using EncoderDecoder.Logic.Model;
+﻿using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
@@ -18,39 +18,44 @@ namespace EncoderDecoder.Logic.Controller
         }
         public bool Decrypting()
         {
-            var result = DeserializeKey(PathKey);
-            if (result == false)
-            {
-                return false;
-            }
-            string[] str = Text.Split();
-            for (int s = 0; s < str.Length; s++)
-            {
-                for (int j = 0; j < ArrayOfSymb.Length; j++)
-                {
-                    if (str[s] == j.ToString())
-                    {
-                        DecryptedText += ArrayOfSymb[j].ToString();
-                        break;
-                    }
-                }
-            }
-            return true;
-        }
-        private bool DeserializeKey(string Path)
-        {
             try
             {
-                var fm = new BinaryFormatter();
-                using (FileStream fs = new FileStream(Path, FileMode.Open))
+                DeserializeKey(PathKey);
+                string[] str = Text.Split();
+                int LengthArrayOfSymb = Convert.ToInt32(ArrayOfSymb.Length);
+                for (int s = 0; s < str.Length; s++)
                 {
-                    ArrayOfSymb = (char[])fm.Deserialize(fs);
+                    if (str[s] != "")
+                    {
+                        int LengthEncodedSymb = Convert.ToInt32(str[s]);
+                        if (LengthEncodedSymb > LengthArrayOfSymb)
+                        {
+                            return false;
+                        }
+                    }
+                    for (int j = 0; j < ArrayOfSymb.Length; j++)
+                    {
+                        if (str[s] == j.ToString())
+                        {
+                            DecryptedText += ArrayOfSymb[j].ToString();
+                            break;
+                        }
+                    }
                 }
                 return true;
             }
             catch
             {
                 return false;
+            }
+          
+        }
+        private void DeserializeKey(string Path)
+        {
+            var fm = new BinaryFormatter();
+            using (FileStream fs = new FileStream(Path, FileMode.Open))
+            {
+                ArrayOfSymb = (char[])fm.Deserialize(fs);
             }
         }
         public string GetDecryptedText()

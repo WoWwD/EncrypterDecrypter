@@ -28,21 +28,15 @@ namespace EncrypterDecrypter.WPF
         }
         private void InsertTextFromFile_Click(object sender, RoutedEventArgs e)
         {
-            var OpenFile = new Microsoft.Win32.OpenFileDialog();
-            Nullable<bool> Success = OpenFile.ShowDialog();
-            OpenFile.DefaultExt = ".txt";
-            OpenFile.Filter = "Text documents (.txt)|*.txt";
-            try
-            {
-                if (Success.HasValue && Success.Value)
-                {
-                    Textbox.Text = "";
-                    Textbox.Text = File.ReadAllText(OpenFile.FileName);
-                }
-            }
-            catch
+            var result = OpenFileDialogResult("*.txt");
+            if (result == null)
             {
                 MessageBox.Show("Неверный формат файла!");
+            }
+            else
+            {
+                Textbox.Text = "";
+                Textbox.Text = File.ReadAllText(result);
             }
         }
         private void ButtonEncrypting_Click(object sender, RoutedEventArgs e)
@@ -58,8 +52,7 @@ namespace EncrypterDecrypter.WPF
                 var result = encr.Encrypting();
                 if (result == true)
                 {
-                    Textbox.Text = "";
-                    //Textbox.Text = encr.GetEncodedText();
+                    Textbox.Text = encr.GetEncodedText();
                     MessageBox.Show($"Создан текстовый файл и ключ с названием {Path}");
                 }
             }
@@ -90,28 +83,22 @@ namespace EncrypterDecrypter.WPF
         }
         private void button1_Click(object sender, RoutedEventArgs e)
         {
-            var OpenFile = new Microsoft.Win32.OpenFileDialog();
-            Nullable<bool> Success = OpenFile.ShowDialog();
-            OpenFile.DefaultExt = ".bin";
-            OpenFile.Filter = "Text documents (.bin)|*.bin";
-            try
-            {
-                if (Success.HasValue && Success.Value)
-                {
-                    var fm = new BinaryFormatter();
-                    using (FileStream fs = new FileStream(OpenFile.FileName, FileMode.Open))
-                    {
-                        ArrayOfSymb = (char[])fm.Deserialize(fs);
-                    }
-                    textboxKey.Text = OpenFile.SafeFileName;
-                    PathKey = OpenFile.FileName;
-                    buttonEncrypting.IsEnabled = false;
-                    buttonDecrypting.IsEnabled = true;
-                }
-            }
-            catch
+            var result = OpenFileDialogResult("*.bin");
+            if (result == null)
             {
                 MessageBox.Show("Неверный формат ключа!");
+            }
+            else
+            {
+                var fm = new BinaryFormatter();
+                using (FileStream fs = new FileStream(result, FileMode.Open))
+                {
+                    ArrayOfSymb = (char[])fm.Deserialize(fs);
+                }
+                textboxKey.Text = result.Remove(0, result.Length - 40);
+                PathKey = result;
+                buttonEncrypting.IsEnabled = false;
+                buttonDecrypting.IsEnabled = true;
             }
         }
         private void buttonClearTextboxKey_Click(object sender, RoutedEventArgs e)
@@ -119,6 +106,17 @@ namespace EncrypterDecrypter.WPF
             textboxKey.Text = "";
             buttonEncrypting.IsEnabled = true;
             buttonDecrypting.IsEnabled = false;
+        }
+        private string OpenFileDialogResult(string TypeFile)
+        {
+            var OpenFile = new Microsoft.Win32.OpenFileDialog();
+            OpenFile.DefaultExt = TypeFile;
+            OpenFile.Filter = $"documents ({TypeFile})|{TypeFile}";
+            if (OpenFile.ShowDialog() == true)
+            {
+                return OpenFile.FileName;
+            }
+            return null;
         }
     }
 }

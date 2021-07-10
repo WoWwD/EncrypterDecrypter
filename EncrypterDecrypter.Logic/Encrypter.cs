@@ -11,12 +11,13 @@ namespace EncoderDecoder.Logic.Controller
         private string PathKey { get; }
         private string PathEncodedText { get; }
         private string EncodedText;
-        private char[] ArrayOfsymb = new char[ArrayOfSymbols.symbols.Length];
+        private char[] ArrayOfsymb;
         public Encrypter(string Text, string PathKey, string PathEncodedText)
         {
             this.Text = Text;
             this.PathKey = PathKey;
             this.PathEncodedText = PathEncodedText;
+            ArrayOfsymb = new char[ArrayOfSymbols.symbols.Length];
         }
         public bool Encrypting()
         {
@@ -58,13 +59,6 @@ namespace EncoderDecoder.Logic.Controller
                 return false;
             }
         }
-        public void SaveEncodedText()
-        {
-            using (StreamWriter sw = new StreamWriter(PathEncodedText, false))
-            {
-                sw.Write(EncodedText);
-            }
-        }
         private void SerializeKey(char[] arr, string Path)
         {
             var fm = new BinaryFormatter();
@@ -72,6 +66,17 @@ namespace EncoderDecoder.Logic.Controller
             {
                 fm.Serialize(f, arr);
             }
+        }
+        public void SaveEncodedText()
+        {
+            using (StreamWriter sw = new StreamWriter(PathEncodedText, false))
+            {
+                sw.Write(EncodedText);
+            }
+        }
+        public string GetEncodedText()
+        {
+            return EncodedText;
         }
     }
 }
