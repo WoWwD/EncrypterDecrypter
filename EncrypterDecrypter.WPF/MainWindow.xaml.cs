@@ -29,14 +29,14 @@ namespace EncrypterDecrypter.WPF
         private void InsertTextFromFile_Click(object sender, RoutedEventArgs e)
         {
             var result = OpenFileDialogResult("*.txt");
-            if (result == null)
-            {
-                MessageBox.Show("Неверный формат файла!");
-            }
-            else
+            if (result != null)
             {
                 Textbox.Text = "";
                 Textbox.Text = File.ReadAllText(result);
+            }
+            else
+            {
+                MessageBox.Show("Неверный формат файла!");
             }
         }
         private void ButtonEncrypting_Click(object sender, RoutedEventArgs e)
@@ -50,10 +50,14 @@ namespace EncrypterDecrypter.WPF
             {
                 var encr = new Encrypter(Textbox.Text, $"{Path}.bin", $"{Path}.txt");
                 var result = encr.Encrypting();
-                if (result == true)
+                if (result != false)
                 {
                     Textbox.Text = encr.GetEncodedText();
                     MessageBox.Show($"Создан текстовый файл и ключ с названием {Path}");
+                }
+                else
+                {
+                    MessageBox.Show("Ошибка шифрования!");
                 }
             }
         }
@@ -67,9 +71,13 @@ namespace EncrypterDecrypter.WPF
             {
                 var decr = new Decrypter(Textbox.Text, ArrayOfSymb, PathKey);
                 var result = decr.Decrypting();
-                if (result == true)
+                if (result != false)
                 {
                     Textbox.Text = decr.GetDecryptedText();
+                    textboxKey.Text = "";
+                    buttonEncrypting.IsEnabled = true;
+                    buttonDecrypting.IsEnabled = false;
+
                 }
                 else
                 {
@@ -83,13 +91,9 @@ namespace EncrypterDecrypter.WPF
         }
         private void button1_Click(object sender, RoutedEventArgs e)
         {
-            var result = OpenFileDialogResult("*.bin");
-            if (result == null)
+            try
             {
-                MessageBox.Show("Неверный формат ключа!");
-            }
-            else
-            {
+                var result = OpenFileDialogResult("*.bin");
                 var fm = new BinaryFormatter();
                 using (FileStream fs = new FileStream(result, FileMode.Open))
                 {
@@ -100,12 +104,10 @@ namespace EncrypterDecrypter.WPF
                 buttonEncrypting.IsEnabled = false;
                 buttonDecrypting.IsEnabled = true;
             }
-        }
-        private void buttonClearTextboxKey_Click(object sender, RoutedEventArgs e)
-        {
-            textboxKey.Text = "";
-            buttonEncrypting.IsEnabled = true;
-            buttonDecrypting.IsEnabled = false;
+            catch
+            {
+                MessageBox.Show("Неверный формат ключа!");
+            }
         }
         private string OpenFileDialogResult(string TypeFile)
         {
