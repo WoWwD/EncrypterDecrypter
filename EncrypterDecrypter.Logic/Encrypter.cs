@@ -73,9 +73,5 @@ namespace EncoderDecoder.Logic.Controller
                 fm.Serialize(f, arr);
             }
         }
-        //public string GetEncodedText()
-        //{
-        //    return EncodedText;
-        //}
     }
 }
