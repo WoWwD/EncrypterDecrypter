@@ -34,10 +34,10 @@ namespace EncrypterDecrypter.WPF
                 Textbox.Text = "";
                 Textbox.Text = File.ReadAllText(result);
             }
-            else
-            {
-                MessageBox.Show("Неверный формат файла!");
-            }
+            //else
+            //{
+            //    MessageBox.Show("Неверный формат файла!");
+            //}
         }
         private void ButtonEncrypting_Click(object sender, RoutedEventArgs e)
         {
@@ -74,10 +74,6 @@ namespace EncrypterDecrypter.WPF
                 if (result != false)
                 {
                     Textbox.Text = decr.GetDecryptedText();
-                    textboxKey.Text = "";
-                    buttonEncrypting.IsEnabled = true;
-                    buttonDecrypting.IsEnabled = false;
-
                 }
                 else
                 {
@@ -91,9 +87,9 @@ namespace EncrypterDecrypter.WPF
         }
         private void button1_Click(object sender, RoutedEventArgs e)
         {
-            try
+            var result = OpenFileDialogResult("*.bin");
+            if (result != null)
             {
-                var result = OpenFileDialogResult("*.bin");
                 var fm = new BinaryFormatter();
                 using (FileStream fs = new FileStream(result, FileMode.Open))
                 {
@@ -103,10 +99,6 @@ namespace EncrypterDecrypter.WPF
                 PathKey = result;
                 buttonEncrypting.IsEnabled = false;
                 buttonDecrypting.IsEnabled = true;
-            }
-            catch
-            {
-                MessageBox.Show("Неверный формат ключа!");
             }
         }
         private string OpenFileDialogResult(string TypeFile)
@@ -119,6 +111,12 @@ namespace EncrypterDecrypter.WPF
                 return OpenFile.FileName;
             }
             return null;
+        }
+        private void buttonClearTextboxKey_Click(object sender, RoutedEventArgs e)
+        {
+            textboxKey.Text = "";
+            buttonEncrypting.IsEnabled = true;
+            buttonDecrypting.IsEnabled = false;
         }
     }
 }
