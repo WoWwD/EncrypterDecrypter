@@ -1,4 +1,5 @@
 ﻿using EncoderDecoder.Logic.Controller;
+using EncoderDecoder.Logic.Model;
 using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -14,7 +15,7 @@ namespace EncrypterDecrypter.WPF
     {
         private static Guid guid = Guid.NewGuid();
         private string Path;
-        private char[] ArrayOfSymb = new char[163];
+        private char[] ArrayOfSymb = new char[ArrayOfSymbols.symbols.Length];
         private string PathKey;
         public MainWindow()
         {
@@ -90,15 +91,22 @@ namespace EncrypterDecrypter.WPF
             var result = OpenFileDialogResult("*.bin");
             if (result != null)
             {
-                var fm = new BinaryFormatter();
-                using (FileStream fs = new FileStream(result, FileMode.Open))
+                try
                 {
-                    ArrayOfSymb = (char[])fm.Deserialize(fs);
+                    var fm = new BinaryFormatter();
+                    using (FileStream fs = new FileStream(result, FileMode.Open))
+                    {
+                        ArrayOfSymb = (char[])fm.Deserialize(fs);
+                    }
+                    textboxKey.Text = result.Remove(0, result.Length - 40);
+                    PathKey = result;
+                    buttonEncrypting.IsEnabled = false;
+                    buttonDecrypting.IsEnabled = true;
                 }
-                textboxKey.Text = result.Remove(0, result.Length - 40);
-                PathKey = result;
-                buttonEncrypting.IsEnabled = false;
-                buttonDecrypting.IsEnabled = true;
+                catch
+                {
+                    MessageBox.Show("Неверный формат ключа!");
+                }
             }
         }
         private string OpenFileDialogResult(string TypeFile)
