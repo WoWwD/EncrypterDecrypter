@@ -14,7 +14,7 @@
         </Grid.ColumnDefinitions>
         <Button x:Name="buttonEncrypting" Content="Зашифровать" HorizontalAlignment="Left" Margin="348,385,0,0" VerticalAlignment="Top" Width="100" Height="30" Grid.ColumnSpan="3"/>
         <Button x:Name="buttonDecrypting" Content="Расшифровать" HorizontalAlignment="Left" Margin="10.377,385,0,0" VerticalAlignment="Top" Width="100" Height="30" Grid.Column="2"/>
-        <TextBox x:Name="Textbox" BorderThickness="0" Height="353" Margin="15,15,15.023,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Grid.ColumnSpan="3" VerticalScrollBarVisibility="Auto">
+        <TextBox x:Name="Textbox" BorderThickness="0" Height="353" AcceptsReturn="True" Margin="15,15,15.023,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Grid.ColumnSpan="3" VerticalScrollBarVisibility="Auto">
         </TextBox>
         <Button x:Name="buttonInsertTextFromFile" Content="Вставить текст из файла (.txt)" Margin="362,445,336.023,0" VerticalAlignment="Top" Height="30" Width="170" Grid.ColumnSpan="3"/>
         <TextBox x:Name="textboxKey" BorderThickness="0" HorizontalAlignment="Left" IsReadOnly="True" Height="30" Margin="30,385,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="267" TextAlignment="Center"/>
