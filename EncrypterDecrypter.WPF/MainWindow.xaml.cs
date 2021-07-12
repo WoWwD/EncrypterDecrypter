@@ -1,9 +1,16 @@
 ﻿using EncoderDecoder.Logic.Controller;
 using EncoderDecoder.Logic.Model;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Forms;
+using System.Windows.Threading;
 using MessageBox = System.Windows.Forms.MessageBox;
 
 namespace EncrypterDecrypter.WPF
@@ -14,9 +21,12 @@ namespace EncrypterDecrypter.WPF
     public partial class MainWindow : Window
     {
         private static Guid guid = Guid.NewGuid();
-        private string Path;
         private char[] ArrayOfSymb = new char[ArrayOfSymbols.symbols.Length];
-        private string PathKey;
+        private string PathKey, PathFile, Text, Path;
+        private long size;
+        private BackgroundWorker bw;
+        private Encrypter enc;
+        private Decrypter dec;
         public MainWindow()
         {
             InitializeComponent();
@@ -26,19 +36,45 @@ namespace EncrypterDecrypter.WPF
             buttonInsertTextFromFile.Click += InsertTextFromFile_Click;
             #endregion
             buttonDecrypting.IsEnabled = false;
+            progressbar.Visibility = Visibility.Collapsed;
+            labelProgressbar.Visibility = Visibility.Collapsed;
         }
         private void InsertTextFromFile_Click(object sender, RoutedEventArgs e)
         {
-            var result = OpenFileDialogResult("*.txt");
-            if (result != null)
+            try
             {
-                Textbox.Text = "";
-                Textbox.Text = File.ReadAllText(result);
+                var OpenFile = new Microsoft.Win32.OpenFileDialog();
+                OpenFile.Filter = "Documents (*.txt, *.docx, *.doc)|*.txt;*.docx;*.doc";
+                if (OpenFile.ShowDialog() == true)
+                {
+                    Textbox.Text = "";
+                    Text = "";
+                    if (OpenFile.FileName.Remove(0, OpenFile.FileName.Length - 4).Contains(".txt"))
+                    {
+                        bw = new BackgroundWorker();
+                        bw.WorkerReportsProgress = true;
+                        bw.DoWork += new DoWorkEventHandler(bw_DoWork_LoadTextFromTxtFile);
+                        bw.ProgressChanged += new ProgressChangedEventHandler(bw_ProgressChanged_LoadTextFromTxtFile);
+                        bw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bw_RunWorkerCompleted_LoadTextFromTxtFile);
+                        PathFile = OpenFile.FileName;
+                        bw.RunWorkerAsync();
+                    }
+                    if (OpenFile.FileName.Remove(0, OpenFile.FileName.Length - 4).Contains(".doc") || OpenFile.FileName.Remove(0, OpenFile.FileName.Length - 5).Contains(".docx"))
+                    {
+                        bw = new BackgroundWorker();
+                        bw.WorkerReportsProgress = true;
+                        bw.DoWork += new DoWorkEventHandler(bw_DoWork_LoadTextFromWord);
+                        bw.ProgressChanged += new ProgressChangedEventHandler(bw_ProgressChanged_LoadTextFromWord);
+                        bw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bw_RunWorkerCompleted_LoadTextFromWord);
+                        PathFile = OpenFile.FileName;
+                        bw.RunWorkerAsync();
+                    }
+                }
             }
-            //else
-            //{
-            //    MessageBox.Show("Неверный формат файла!");
-            //}
+            catch
+            {
+                MessageBox.Show("Неверный формат файла!");
+            }
         }
         private void ButtonEncrypting_Click(object sender, RoutedEventArgs e)
         {
@@ -49,17 +85,12 @@ namespace EncrypterDecrypter.WPF
             }
             else
             {
-                var encr = new Encrypter(Textbox.Text, $"{Path}.bin", $"{Path}.txt");
-                var result = encr.Encrypting();
-                if (result != false)
-                {
-                    Textbox.Text = encr.GetEncodedText();
-                    MessageBox.Show($"Создан текстовый файл и ключ с названием {Path}");
-                }
-                else
-                {
-                    MessageBox.Show("Ошибка шифрования!");
-                }
+                bw = new BackgroundWorker();
+                bw.WorkerReportsProgress = true;
+                bw.DoWork += new DoWorkEventHandler(bw_DoWork_EncryptingText);
+                bw.ProgressChanged += new ProgressChangedEventHandler(bw_ProgressChanged_EncryptingText);
+                bw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bw_RunWorkerCompleted_EncryptingText);
+                bw.RunWorkerAsync();
             }
         }
         private void ButtonDecrypting_Click(object sender, RoutedEventArgs e)
@@ -70,16 +101,12 @@ namespace EncrypterDecrypter.WPF
             }
             else
             {
-                var decr = new Decrypter(Textbox.Text, ArrayOfSymb, PathKey);
-                var result = decr.Decrypting();
-                if (result != false)
-                {
-                    Textbox.Text = decr.GetDecryptedText();
-                }
-                else
-                {
-                    MessageBox.Show("Ключ не подходит");
-                }
+                bw = new BackgroundWorker();
+                bw.WorkerReportsProgress = true;
+                bw.DoWork += new DoWorkEventHandler(bw_DoWork_DecryptingText);
+                bw.ProgressChanged += new ProgressChangedEventHandler(bw_ProgressChanged_DecryptingText);
+                bw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bw_RunWorkerCompleted_DecryptingText);
+                bw.RunWorkerAsync();
             }
         }
         public static object GetGuid()
@@ -88,37 +115,28 @@ namespace EncrypterDecrypter.WPF
         }
         private void button1_Click(object sender, RoutedEventArgs e)
         {
-            var result = OpenFileDialogResult("*.bin");
-            if (result != null)
+            try
             {
-                try
+                var OpenFile = new Microsoft.Win32.OpenFileDialog();
+                OpenFile.DefaultExt = "*.bin";
+                OpenFile.Filter = "Documents (*.bin)|*.bin";
+                if (OpenFile.ShowDialog() == true)
                 {
                     var fm = new BinaryFormatter();
-                    using (FileStream fs = new FileStream(result, FileMode.Open))
+                    using (FileStream fs = new FileStream(OpenFile.FileName, FileMode.Open))
                     {
                         ArrayOfSymb = (char[])fm.Deserialize(fs);
                     }
-                    textboxKey.Text = result.Remove(0, result.Length - 40);
-                    PathKey = result;
+                    textboxKey.Text = OpenFile.SafeFileName;
+                    PathKey = OpenFile.FileName;
                     buttonEncrypting.IsEnabled = false;
                     buttonDecrypting.IsEnabled = true;
                 }
-                catch
-                {
-                    MessageBox.Show("Неверный формат ключа!");
-                }
             }
-        }
-        private string OpenFileDialogResult(string TypeFile)
-        {
-            var OpenFile = new Microsoft.Win32.OpenFileDialog();
-            OpenFile.DefaultExt = TypeFile;
-            OpenFile.Filter = $"documents ({TypeFile})|{TypeFile}";
-            if (OpenFile.ShowDialog() == true)
+            catch
             {
-                return OpenFile.FileName;
+                MessageBox.Show("Неверный формат ключа!");
             }
-            return null;
         }
         private void buttonClearTextboxKey_Click(object sender, RoutedEventArgs e)
         {
@@ -126,5 +144,217 @@ namespace EncrypterDecrypter.WPF
             buttonEncrypting.IsEnabled = true;
             buttonDecrypting.IsEnabled = false;
         }
+        #region BackgroundWorker
+        #region BackgroundWorker for LoadTextFromTxtFile
+        private void bw_DoWork_LoadTextFromTxtFile(object sender, DoWorkEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                labelProgressbar.Content = "Loading";
+                progressbar.Visibility = Visibility.Visible;
+                labelProgressbar.Visibility = Visibility.Visible;
+            });
+            Thread.Sleep(100);
+            try
+            {
+                using (StreamReader sr = new StreamReader(PathFile))
+                {
+                    Stream baseStream = sr.BaseStream;
+                    size = baseStream.Length;
+                    string line;
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        Text += line;
+                        ((BackgroundWorker)sender).ReportProgress(Convert.ToInt32(baseStream.Position));
+                        Thread.Sleep(30);
+                    }
+                    Dispatcher.Invoke(() =>
+                    {
+                        Textbox.Text = Text;
+                        progressbar.Visibility = Visibility.Collapsed;
+                        labelProgressbar.Visibility = Visibility.Collapsed;
+                    });
+                }
+            }
+            catch
+            {
+                MessageBox.Show("Ошибка загрузки текста!");
+            }
+            finally
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    progressbar.Visibility = Visibility.Collapsed;
+                    labelProgressbar.Visibility = Visibility.Collapsed;
+                });
+            }
+        }
+        private void bw_RunWorkerCompleted_LoadTextFromTxtFile(object sender, RunWorkerCompletedEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                progressbar.Visibility = Visibility.Collapsed;
+                labelProgressbar.Visibility = Visibility.Collapsed;
+            });
+        }
+        private void bw_ProgressChanged_LoadTextFromTxtFile(object sender, ProgressChangedEventArgs e)
+        {
+            progressbar.Value = e.ProgressPercentage;
+            progressbar.Maximum = size;
+        }
+        #endregion
+
+        #region BackgroundWorker for LoadTextFromWord
+        private void bw_RunWorkerCompleted_LoadTextFromWord(object sender, RunWorkerCompletedEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                progressbar.Visibility = Visibility.Collapsed;
+                labelProgressbar.Visibility = Visibility.Collapsed;
+            });
+        }
+        private void bw_ProgressChanged_LoadTextFromWord(object sender, ProgressChangedEventArgs e)
+        {
+            progressbar.Value = e.ProgressPercentage;
+            progressbar.Maximum = size;
+        }
+        private void bw_DoWork_LoadTextFromWord(object sender, DoWorkEventArgs e)
+        {
+            var wordApp = new Microsoft.Office.Interop.Word.Application();
+            var wordDoc = wordApp.Documents.Open(PathFile);
+            size = wordDoc.Paragraphs.Count;
+            Dispatcher.Invoke(() =>
+            {
+                labelProgressbar.Content = "Loading";
+                progressbar.Visibility = Visibility.Visible;
+                labelProgressbar.Visibility = Visibility.Visible;
+            });
+            Thread.Sleep(100);
+            try
+            {
+                for (int i = 0; i < wordDoc.Paragraphs.Count; i++)
+                {
+                    Text += " \r\n " + wordDoc.Paragraphs[i + 1].Range.Text;
+                    ((BackgroundWorker)sender).ReportProgress(i);
+                    Thread.Sleep(30);
+                }
+                Dispatcher.Invoke(() =>
+                {
+                    Textbox.Text = Text;
+                });
+            }
+            catch
+            {
+                MessageBox.Show("Ошибка загрузки текста!");
+            }
+            finally
+            {
+                wordDoc.Close();
+                wordApp.Quit();
+                Dispatcher.Invoke(() =>
+                {
+                    progressbar.Visibility = Visibility.Collapsed;
+                    labelProgressbar.Visibility = Visibility.Collapsed;
+                });
+            }
+        }
+        #endregion
+
+        #region BackgroundWorker for EncryptingText
+        private void bw_RunWorkerCompleted_EncryptingText(object sender, RunWorkerCompletedEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                progressbar.Visibility = Visibility.Collapsed;
+                labelProgressbar.Visibility = Visibility.Collapsed;
+                MessageBox.Show($"Создан текстовый файл и ключ с названием {Path}");
+            });
+        }
+        private void bw_ProgressChanged_EncryptingText(object sender, ProgressChangedEventArgs e)
+        {
+            //progressbar.Value = e.ProgressPercentage;
+            //progressbar.Maximum = size;
+        }
+        private void bw_DoWork_EncryptingText(object sender, DoWorkEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                labelProgressbar.Content = "Please, wait";
+                //progressbar.Visibility = Visibility.Visible;
+                labelProgressbar.Visibility = Visibility.Visible;
+                enc = new Encrypter(Textbox.Text, $"{Path}.bin", $"{Path}.txt");
+            }); 
+            try
+            {
+                var result = enc.Encrypting();
+                size = enc.masOfText.Length;
+                Dispatcher.Invoke(() =>
+                {
+                    Textbox.Text = enc.GetEncodedText();
+                });
+            }
+            catch
+            {
+                MessageBox.Show("Ошибка шифрования!");
+            }
+            finally
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    //progressbar.Visibility = Visibility.Collapsed;
+                    labelProgressbar.Visibility = Visibility.Collapsed;
+                });
+            }
+        }
+        #endregion
+
+        #region BackgroundWorker for DecryptingText
+        private void bw_RunWorkerCompleted_DecryptingText(object sender, RunWorkerCompletedEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                progressbar.Visibility = Visibility.Collapsed;
+                labelProgressbar.Visibility = Visibility.Collapsed;
+            });
+        }
+        private void bw_ProgressChanged_DecryptingText(object sender, ProgressChangedEventArgs e)
+        {
+            //progressbar.Value = e.ProgressPercentage;
+            //progressbar.Maximum = size;
+        }
+        private void bw_DoWork_DecryptingText(object sender, DoWorkEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                labelProgressbar.Content = "Please, wait";
+                //progressbar.Visibility = Visibility.Visible;
+                labelProgressbar.Visibility = Visibility.Visible;
+                dec = new Decrypter(Textbox.Text, ArrayOfSymb, PathKey);
+            });
+            try
+            {
+                var result = dec.Decrypting();
+                size = enc.masOfText.Length;
+                Dispatcher.Invoke(() =>
+                {
+                    Textbox.Text = dec.GetDecryptedText();
+                });
+            }
+            catch
+            {
+                MessageBox.Show("Ключ не подходит");
+            }
+            finally
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    //progressbar.Visibility = Visibility.Collapsed;
+                    labelProgressbar.Visibility = Visibility.Collapsed;
+                });
+            }
+        }
+        #endregion
+
+        #endregion
     }
 }

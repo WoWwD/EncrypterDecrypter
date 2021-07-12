@@ -1,6 +1,4 @@
 ﻿using System;
-using EncoderDecoder.Logic.Controller;
-using EncoderDecoder.Logic;
 
 namespace EncoderDecoder.CMD
 {

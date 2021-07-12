@@ -5,20 +5,35 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:EncrypterDecrypter.WPF"
         mc:Ignorable="d"
-        Title="EncrypterDecrypter" Height="550" Width="900">
+        Title="EncrypterDecrypter" Height="600" Width="900">
     <Grid x:Name="Main" Background="WhiteSmoke" ScrollViewer.CanContentScroll="True">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="413*"/>
-            <ColumnDefinition Width="34*"/>
-            <ColumnDefinition Width="446*"/>
+            <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <Button x:Name="buttonEncrypting" Content="Зашифровать" HorizontalAlignment="Left" Margin="348,385,0,0" VerticalAlignment="Top" Width="100" Height="30" Grid.ColumnSpan="3"/>
-        <Button x:Name="buttonDecrypting" Content="Расшифровать" HorizontalAlignment="Left" Margin="10.377,385,0,0" VerticalAlignment="Top" Width="100" Height="30" Grid.Column="2"/>
-        <TextBox x:Name="Textbox" BorderThickness="0" Height="353" AcceptsReturn="True" Margin="15,15,15.023,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Grid.ColumnSpan="3" VerticalScrollBarVisibility="Auto">
-        </TextBox>
-        <Button x:Name="buttonInsertTextFromFile" Content="Вставить текст из файла (.txt)" Margin="362,445,336.023,0" VerticalAlignment="Top" Height="30" Width="170" Grid.ColumnSpan="3"/>
-        <TextBox x:Name="textboxKey" BorderThickness="0" HorizontalAlignment="Left" IsReadOnly="True" Height="30" Margin="30,385,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="267" TextAlignment="Center"/>
-        <Button x:Name="buttonForAddKey" Content="Добавить ключ для расшифрования (.bin)"  HorizontalAlignment="Left" Margin="43.8,420,0,0" VerticalAlignment="Top" Width="240" Height="40" Click="button1_Click" UseLayoutRounding="False"/>
-        <Button x:Name="buttonClearTextboxKey" Content="Очистить" HorizontalAlignment="Left" Margin="125,468,0,0" Width="80" Height="35" Click="buttonClearTextboxKey_Click" VerticalAlignment="Top"/>
+        <Button x:Name="buttonEncrypting" Content="Зашифровать" Margin="334,420,0,0" VerticalAlignment="Top" Height="35" HorizontalAlignment="Left" Width="100"/>
+        <Button x:Name="buttonDecrypting" Content="Расшифровать" Margin="0,420,340,0" VerticalAlignment="Top" Height="35" HorizontalAlignment="Right" Width="100"/>
+        <TextBox x:Name="Textbox" BorderThickness="0" AcceptsReturn="True" Margin="15,15,14.6,180.4" TextWrapping="Wrap" Text="" VerticalScrollBarVisibility="Auto"/>
+        <Button x:Name="buttonInsertTextFromFile" Content="Вставить текст из файла" Margin="372,494,0,0" VerticalAlignment="Top" Height="35" Width="145" HorizontalAlignment="Left"/>
+        <GroupBox x:Name="groupboxKey" Header="Key" HorizontalAlignment="Left" Height="165" Margin="15,0,0,10.4" VerticalAlignment="Bottom" Width="295">
+            <Grid x:Name="___GridInGroupboxKey_" Margin="1,1,1,1" UseLayoutRounding="False">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="textboxKey" BorderThickness="0" IsReadOnly="True" Margin="10,10,9.6,100.4" TextWrapping="Wrap" Text="" TextAlignment="Center"/>
+                <Button x:Name="buttonForAddKey" Content="Добавить ключ для расшифрования (.bin)" Margin="20.734,50,20.866,0" Click="button1_Click" UseLayoutRounding="False" Height="35" VerticalAlignment="Top"/>
+                <Button x:Name="buttonClearTextboxKey" Content="Очистить" Margin="101,95,100.6,0" Click="buttonClearTextboxKey_Click" Height="35" VerticalAlignment="Top"/>
+            </Grid>
+        </GroupBox>
+        <ProgressBar x:Name="progressbar" HorizontalAlignment="Left" Height="35" Margin="672,420,0,0" VerticalAlignment="Top" Width="145" Minimum="0"/>
+        <Label x:Name="labelProgressbar" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Content="Please, wait..." HorizontalAlignment="Center" Margin="676,463,77.6,79.4" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Width="140" Height="28">
+            <Label.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="0.051"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </Label.RenderTransform>
+        </Label>
     </Grid>
 </Window>

@@ -12,6 +12,7 @@ namespace EncoderDecoder.Logic.Controller
         private string PathEncodedText { get; }
         private string EncodedText;
         private char[] ArrayOfsymb;
+        public char [] masOfText;
         public Encrypter(string Text, string PathKey, string PathEncodedText)
         {
             this.Text = Text;
@@ -37,13 +38,13 @@ namespace EncoderDecoder.Logic.Controller
                     ArrayOfsymb[j] = ArrayOfsymb[i];
                     ArrayOfsymb[i] = temp;
                 }
-                char[] str = Text.ToCharArray(); // Разбиение введённой строки на символы
+                masOfText = Text.ToCharArray(); // Разбиение введённой строки на символы
                 // подставление индексов массива вместо букв и символов в введённой строке
-                for (int s = 0; s < str.Length; s++)
+                for (int s = 0; s < masOfText.Length; s++)
                 {
                     for (int j = 0; j < ArrayOfsymb.Length; j++)
                     {
-                        if (str[s] == ArrayOfsymb[j])
+                        if (masOfText[s] == ArrayOfsymb[j])
                         {
                             EncodedText = EncodedText + " " + j.ToString();
                             break;
