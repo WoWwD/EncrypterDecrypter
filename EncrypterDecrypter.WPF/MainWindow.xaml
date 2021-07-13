@@ -10,30 +10,33 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <Button x:Name="buttonEncrypting" Content="Зашифровать" Margin="334,420,0,0" VerticalAlignment="Top" Height="35" HorizontalAlignment="Left" Width="100"/>
-        <Button x:Name="buttonDecrypting" Content="Расшифровать" Margin="0,420,340,0" VerticalAlignment="Top" Height="35" HorizontalAlignment="Right" Width="100"/>
-        <TextBox x:Name="Textbox" BorderThickness="0" AcceptsReturn="True" Margin="15,15,14.6,180.4" TextWrapping="Wrap" Text="" VerticalScrollBarVisibility="Auto"/>
-        <Button x:Name="buttonInsertTextFromFile" Content="Вставить текст из файла" Margin="372,494,0,0" VerticalAlignment="Top" Height="35" Width="145" HorizontalAlignment="Left"/>
-        <GroupBox x:Name="groupboxKey" Header="Key" HorizontalAlignment="Left" Height="165" Margin="15,0,0,10.4" VerticalAlignment="Bottom" Width="295">
-            <Grid x:Name="___GridInGroupboxKey_" Margin="1,1,1,1" UseLayoutRounding="False">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <TextBox x:Name="textboxKey" BorderThickness="0" IsReadOnly="True" Margin="10,10,9.6,100.4" TextWrapping="Wrap" Text="" TextAlignment="Center"/>
-                <Button x:Name="buttonForAddKey" Content="Добавить ключ для расшифрования (.bin)" Margin="20.734,50,20.866,0" Click="button1_Click" UseLayoutRounding="False" Height="35" VerticalAlignment="Top"/>
-                <Button x:Name="buttonClearTextboxKey" Content="Очистить" Margin="101,95,100.6,0" Click="buttonClearTextboxKey_Click" Height="35" VerticalAlignment="Top"/>
-            </Grid>
-        </GroupBox>
-        <ProgressBar x:Name="progressbar" HorizontalAlignment="Left" Height="35" Margin="672,420,0,0" VerticalAlignment="Top" Width="145" Minimum="0"/>
-        <Label x:Name="labelProgressbar" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Content="Please, wait..." HorizontalAlignment="Center" Margin="676,463,77.6,79.4" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Width="140" Height="28">
-            <Label.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform/>
-                    <SkewTransform/>
-                    <RotateTransform Angle="0.051"/>
-                    <TranslateTransform/>
-                </TransformGroup>
-            </Label.RenderTransform>
-        </Label>
+        <TextBox x:Name="Textbox" BorderThickness="0" AcceptsReturn="True" Margin="15,15,14.6,170" TextWrapping="Wrap" Text="" VerticalScrollBarVisibility="Auto"/>
+        <Canvas x:Name="Canvas" HorizontalAlignment="Left" Height="170" Margin="15,0,0,0.4" VerticalAlignment="Bottom" Width="864">
+            <Button x:Name="buttonEncrypting" Content="Зашифровать" HorizontalAlignment="Stretch" Width="100" Height="35" VerticalAlignment="Stretch" Canvas.Right="432" Canvas.Top="20"/>
+            <Button x:Name="buttonDecrypting" Content="Расшифровать" VerticalAlignment="Top" Height="35" HorizontalAlignment="Left" Width="100" Canvas.Left="442" Canvas.Top="20" RenderTransformOrigin="0.508,0.72"/>
+            <Button x:Name="buttonInsertTextFromFile" Content="Вставить текст из файла" Width="145" HorizontalAlignment="Left" Height="35" VerticalAlignment="Top" Canvas.Left="360" Canvas.Top="70"/>
+            <Button x:Name="buttonSaveTextInFile" Content="Сохранить текст в файл" HorizontalAlignment="Stretch" Width="145" Click="buttonSaveTextInFile_Click" Height="35" VerticalAlignment="Stretch" Canvas.Left="360" Canvas.Top="119"/>
+            <ProgressBar x:Name="progressbar" HorizontalAlignment="Right" Height="35" VerticalAlignment="Top" Width="145" Minimum="0" Canvas.Right="70" Canvas.Top="20"/>
+            <Label x:Name="labelProgressbar" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Content="Please, wait..." HorizontalAlignment="Right" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Width="145" Height="28" Canvas.Right="70" Canvas.Top="72" Canvas.Left="649">
+                <Label.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="0.051"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Label.RenderTransform>
+            </Label>
+            <GroupBox x:Name="groupboxKey" Header="Key" HorizontalAlignment="Left" Height="145" VerticalAlignment="Bottom" Width="295" Canvas.Bottom="15">
+                <Grid x:Name="___GridInGroupboxKey_" Margin="1,1,1,1" UseLayoutRounding="False">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="textboxKey" BorderThickness="0" IsReadOnly="True" Margin="9,10,10.6,0" TextWrapping="Wrap" Text="" Height="25" TextAlignment="Center" VerticalAlignment="Top"/>
+                    <Button x:Name="buttonForAddKey" Content="Добавить ключ для расшифрования (.bin)" Margin="21.534,40,20.066,0" Click="button1_Click" UseLayoutRounding="False" Height="35.4" VerticalAlignment="Top"/>
+                    <Button x:Name="buttonClearTextboxKey" Content="Очистить" Margin="98,80,103.6,0" Click="buttonClearTextboxKey_Click" Height="35" VerticalAlignment="Top"/>
+                </Grid>
+            </GroupBox>
+        </Canvas>
     </Grid>
 </Window>

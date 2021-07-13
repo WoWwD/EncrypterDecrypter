@@ -60,7 +60,7 @@ namespace EncoderDecoder.Logic.Controller
         {
             return DecryptedText;
         }
-        private static string BinarySearch(char[] array, string searchedValue, int left, int right)
+        private string BinarySearch(char[] array, string searchedValue, int left, int right)
         {
             int searchedvalue;
             while (left <= right)

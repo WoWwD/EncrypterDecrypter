@@ -1,15 +1,11 @@
 ﻿using EncoderDecoder.Logic.Controller;
 using EncoderDecoder.Logic.Model;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Forms;
 using System.Windows.Threading;
 using MessageBox = System.Windows.Forms.MessageBox;
 
@@ -23,7 +19,7 @@ namespace EncrypterDecrypter.WPF
         private static Guid guid = Guid.NewGuid();
         private char[] ArrayOfSymb = new char[ArrayOfSymbols.symbols.Length];
         private string PathKey, PathFile, Text, Path;
-        private long size;
+        private int size = 25;
         private BackgroundWorker bw;
         private Encrypter enc;
         private Decrypter dec;
@@ -44,13 +40,15 @@ namespace EncrypterDecrypter.WPF
             try
             {
                 var OpenFile = new Microsoft.Win32.OpenFileDialog();
-                OpenFile.Filter = "Documents (*.txt, *.docx, *.doc)|*.txt;*.docx;*.doc";
+                OpenFile.Filter = "Documents (*.txt, *.docx, *.doc, *.rtf)|*.txt;*.docx;*.doc;*.rtf";
                 if (OpenFile.ShowDialog() == true)
                 {
                     Textbox.Text = "";
                     Text = "";
                     if (OpenFile.FileName.Remove(0, OpenFile.FileName.Length - 4).Contains(".txt"))
                     {
+                        labelProgressbar.Visibility = Visibility.Visible;
+                        labelProgressbar.Content = "Loading";
                         bw = new BackgroundWorker();
                         bw.WorkerReportsProgress = true;
                         bw.DoWork += new DoWorkEventHandler(bw_DoWork_LoadTextFromTxtFile);
@@ -59,8 +57,11 @@ namespace EncrypterDecrypter.WPF
                         PathFile = OpenFile.FileName;
                         bw.RunWorkerAsync();
                     }
-                    if (OpenFile.FileName.Remove(0, OpenFile.FileName.Length - 4).Contains(".doc") || OpenFile.FileName.Remove(0, OpenFile.FileName.Length - 5).Contains(".docx"))
+                    if (OpenFile.FileName.Remove(0, OpenFile.FileName.Length - 4).Contains(".doc") || OpenFile.FileName.Remove(0, OpenFile.FileName.Length - 5).Contains(".docx") ||
+                        OpenFile.FileName.Remove(0, OpenFile.FileName.Length - 4).Contains(".rtf"))
                     {
+                        labelProgressbar.Visibility = Visibility.Visible;
+                        labelProgressbar.Content = "Loading";
                         bw = new BackgroundWorker();
                         bw.WorkerReportsProgress = true;
                         bw.DoWork += new DoWorkEventHandler(bw_DoWork_LoadTextFromWord);
@@ -144,37 +145,41 @@ namespace EncrypterDecrypter.WPF
             buttonEncrypting.IsEnabled = true;
             buttonDecrypting.IsEnabled = false;
         }
+
         #region BackgroundWorker
         #region BackgroundWorker for LoadTextFromTxtFile
         private void bw_DoWork_LoadTextFromTxtFile(object sender, DoWorkEventArgs e)
         {
             Dispatcher.Invoke(() =>
             {
-                labelProgressbar.Content = "Loading";
                 progressbar.Visibility = Visibility.Visible;
-                labelProgressbar.Visibility = Visibility.Visible;
             });
             Thread.Sleep(100);
             try
             {
                 using (StreamReader sr = new StreamReader(PathFile))
                 {
-                    Stream baseStream = sr.BaseStream;
-                    size = baseStream.Length;
-                    string line;
-                    while ((line = sr.ReadLine()) != null)
-                    {
-                        Text += line;
-                        ((BackgroundWorker)sender).ReportProgress(Convert.ToInt32(baseStream.Position));
-                        Thread.Sleep(30);
-                    }
-                    Dispatcher.Invoke(() =>
-                    {
-                        Textbox.Text = Text;
-                        progressbar.Visibility = Visibility.Collapsed;
-                        labelProgressbar.Visibility = Visibility.Collapsed;
-                    });
+                    Text = sr.ReadToEnd();
+                    //Stream baseStream = sr.BaseStream;
+                    //string line;
+                    //while ((line = sr.ReadLine()) != null)
+                    //{
+                    //    Text += line;
+                    //    ((BackgroundWorker)sender).ReportProgress(Convert.ToInt32(baseStream.Position));
+                    //    Thread.Sleep(30);
+                    //}
                 }
+                for (int i = 0; i <= size; i++)
+                {
+                    ((BackgroundWorker)sender).ReportProgress(i);
+                      Thread.Sleep(30);
+                }
+                Dispatcher.Invoke(() =>
+                {
+                    Textbox.Text = Text;
+                    progressbar.Visibility = Visibility.Collapsed;
+                    labelProgressbar.Visibility = Visibility.Collapsed;
+                });
             }
             catch
             {
@@ -222,19 +227,17 @@ namespace EncrypterDecrypter.WPF
         {
             var wordApp = new Microsoft.Office.Interop.Word.Application();
             var wordDoc = wordApp.Documents.Open(PathFile);
-            size = wordDoc.Paragraphs.Count;
             Dispatcher.Invoke(() =>
             {
-                labelProgressbar.Content = "Loading";
                 progressbar.Visibility = Visibility.Visible;
-                labelProgressbar.Visibility = Visibility.Visible;
             });
             Thread.Sleep(100);
             try
             {
-                for (int i = 0; i < wordDoc.Paragraphs.Count; i++)
+                Text = wordDoc.Content.Text;
+                for (int i = 0; i <= size; i++)
                 {
-                    Text += " \r\n " + wordDoc.Paragraphs[i + 1].Range.Text;
+                    //Text += " \r\n " + wordDoc.Paragraphs[i + 1].Range.Text;
                     ((BackgroundWorker)sender).ReportProgress(i);
                     Thread.Sleep(30);
                 }
@@ -287,7 +290,7 @@ namespace EncrypterDecrypter.WPF
             try
             {
                 var result = enc.Encrypting();
-                size = enc.masOfText.Length;
+                //size = enc.masOfText.Length;
                 Dispatcher.Invoke(() =>
                 {
                     Textbox.Text = enc.GetEncodedText();
@@ -334,7 +337,7 @@ namespace EncrypterDecrypter.WPF
             try
             {
                 var result = dec.Decrypting();
-                size = enc.masOfText.Length;
+                //size = enc.masOfText.Length;
                 Dispatcher.Invoke(() =>
                 {
                     Textbox.Text = dec.GetDecryptedText();
@@ -356,5 +359,22 @@ namespace EncrypterDecrypter.WPF
         #endregion
 
         #endregion
+
+        private void buttonSaveTextInFile_Click(object sender, RoutedEventArgs e)
+        {
+            if (Textbox.Text == null || Textbox.Text == " " || Textbox.Text == "")
+            {
+                MessageBox.Show("Нет текста!");
+            }
+            else
+            {
+                var SaveFile = new Microsoft.Win32.SaveFileDialog();
+                SaveFile.Filter = "Обычный текст (*.txt)|*.txt;|Текст в формате RTF (*.rtf)|*.rtf"; // Документ Word (*.docx)|*.docx;|Документ Word 97-2003 (*.doc)|*.doc
+                if (SaveFile.ShowDialog() == true)
+                {
+                    File.WriteAllText(SaveFile.FileName, Textbox.Text);
+                }
+            }
+        }
     }
 }
