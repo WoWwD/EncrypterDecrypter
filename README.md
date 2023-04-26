@@ -1,4 +1,4 @@
-#Encrypter/decrypter
+# Encrypter/decrypter
 
 To encrypt text, you need to write it into a field, you can insert it from a text file. 
 After that, the key required for decryption and the encrypted text will be given. 
